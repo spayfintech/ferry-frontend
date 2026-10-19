@@ -1,6 +1,7 @@
 // src/pages/legal/RefundCancellationPage.jsx
 import { useState } from "react";
 import { ChevronDown, RotateCcw } from "lucide-react";
+import { VITE_BASE_URL } from "../../lib/constants";
 
 const SECTIONS = [
   {
@@ -203,8 +204,8 @@ export default function RefundCancellationPage() {
                 </p>
                 <p>
                   <span className="font-semibold text-ink">Website: </span>
-                  <a href="https://spay.live" className="text-crimson hover:underline">
-                    https://spay.live
+                  <a href={VITE_BASE_URL} className="text-crimson hover:underline">
+                    { VITE_BASE_URL }
                   </a>
                 </p>
               </div>

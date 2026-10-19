@@ -16,7 +16,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-5 group">
-              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="w-20 h-16 rounded-2xl bg-white flex items-center justify-center group-hover:scale-105 transition-transform">
                 <BrandLogo />
               </div>
               <div>

@@ -38,6 +38,8 @@ export default function FerryBookingPage() {
   const [showFilters, setShowFilters]   = useState(false);
 
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const { data: locResp } = useGet("/locations");
   const locations = locResp?.data || [];
@@ -156,6 +158,17 @@ export default function FerryBookingPage() {
     }
 
     return list;
+  }, [trips, filters]);
+
+  const totalPages = Math.ceil(filteredTrips.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTrips = filteredTrips.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
   }, [trips, filters]);
 
   /* =========================================================
@@ -418,7 +431,7 @@ export default function FerryBookingPage() {
             {/* Trip list */}
             <div className="space-y-4">
               {!loading &&
-                filteredTrips.map((trip) => (
+                paginatedTrips.map((trip) => (
                   <TripCard
                     key={trip.trip_id}
                     trip={trip}
@@ -426,6 +439,58 @@ export default function FerryBookingPage() {
                   />
                 ))}
             </div>
+
+            {!loading && totalPages > 1 && (
+              <nav
+                className="mt-8 flex flex-wrap items-center justify-between gap-4"
+                aria-label="Trip results pages"
+              >
+                <p className="text-sm text-navy/60">
+                  Showing {startIndex + 1}–
+                  {Math.min(startIndex + itemsPerPage, filteredTrips.length)} of{" "}
+                  {filteredTrips.length} ferries
+                </p>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((page) => page - 1)}
+                    disabled={currentPage === 1}
+                    className="rounded-lg border border-powder/60 px-3 py-2 text-sm font-semibold text-brand disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        aria-current={currentPage === page ? "page" : undefined}
+                        aria-label={`Go to page ${page}`}
+                        className={`rounded-lg border px-3 py-2 text-sm font-semibold ${
+                          currentPage === page
+                            ? "border-brand bg-brand text-white"
+                            : "border-powder/60 text-brand hover:bg-brand-cyan/10"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((page) => page + 1)}
+                    disabled={currentPage === totalPages}
+                    className="rounded-lg border border-powder/60 px-3 py-2 text-sm font-semibold text-brand disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                </div>
+              </nav>
+            )}
           </div>
         </div>
       </div>

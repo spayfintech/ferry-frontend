@@ -1,6 +1,7 @@
 // src/pages/legal/TermsConditionsPage.jsx
 import { useState } from "react";
 import { ChevronDown, FileText } from "lucide-react";
+import { VITE_BASE_URL } from "../../lib/constants";
 
 const SECTIONS = [
   {
@@ -11,7 +12,7 @@ const SECTIONS = [
         <p className="mb-4">
           These Terms &amp; Conditions govern your use of the Spay Ferry website
           and booking services operated by Spay Fintech Pvt Ltd, accessible at
-          https://spay.live.
+          { VITE_BASE_URL }.
         </p>
         <p className="mb-4">
           By accessing this website, you acknowledge and accept these terms and
@@ -205,8 +206,8 @@ export default function TermsConditionsPage() {
                 </p>
                 <p>
                   <span className="font-semibold text-ink">Website: </span>
-                  <a href="https://spay.live" className="text-crimson hover:underline">
-                    https://spay.live
+                  <a href={VITE_BASE_URL} className="text-crimson hover:underline">
+                    { VITE_BASE_URL }
                   </a>
                 </p>
               </div>

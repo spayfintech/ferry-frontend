@@ -25,6 +25,7 @@ export default function TopBar() {
             <Phone size={11} />
           </span>
           <span className="hidden xs:inline">Call {COMPANY_PHONE}</span>
+          {`${COMPANY_PHONE.replace(/[^0-9+]/g, " ")}`}
         </a>
       </div>
     </div>
