@@ -81,7 +81,7 @@ export default function AboutPage() {
                 <BrandLogo />
               </div>
               <div className="text-2xl font-black text-ink tracking-tight mb-2">
-                Spay Fintech Pvt Ltd Private Limited
+                Spay Fintech Pvt Ltd 
               </div>
               <div className="text-sm text-navy/60 font-semibold uppercase tracking-[0.15em] mb-1">
                 Ferry &amp; Private Boat Booking
