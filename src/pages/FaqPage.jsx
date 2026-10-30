@@ -111,8 +111,16 @@ export default function FaqPage() {
                 <a href={`tel:${COMPANY_PHONE}`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-ink font-bold hover:bg-powder transition-colors">
                   <Phone size={16} /> Call Us
                 </a>
-                <a href={`mailto:${COMPANY_EMAIL}`} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-white/30 text-white font-bold hover:bg-white/10 transition-colors">
-                  <Mail size={16} /> Email Us
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                    COMPANY_EMAIL.trim()
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-white/30 text-white font-bold hover:bg-white/10 transition-colors"
+                >
+                  <Mail size={16} />
+                  Email Us
                 </a>
               </div>
             </div>
