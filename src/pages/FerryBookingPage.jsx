@@ -44,9 +44,6 @@ export default function FerryBookingPage() {
   const { data: locResp } = useGet("/locations");
   const locations = locResp?.data || [];
 
-  /* =========================================================
-   * Helpers — Auto-fit price range to loaded trips
-   * ========================================================= */
   const applyPriceRangeFromTrips = (items) => {
     if (items.length === 0) return;
     const prices = items.map((t) => Number(t.base_price || 0));
@@ -58,9 +55,6 @@ export default function FerryBookingPage() {
     }));
   };
 
-  /* =========================================================
-   * Load all upcoming trips (default browse mode)
-   * ========================================================= */
   const loadUpcoming = useCallback(async () => {
     setLoading(true);
     setBrowsing(true);
@@ -79,9 +73,6 @@ export default function FerryBookingPage() {
     }
   }, []);
 
-  /* =========================================================
-   * Search with filters
-   * ========================================================= */
   const runSearch = useCallback(async () => {
     if (!from || !to || !date) {
       toast.error("Please select origin, destination and date");
@@ -110,9 +101,6 @@ export default function FerryBookingPage() {
     }
   }, [from, to, date, pax, setParams]);
 
-  /* =========================================================
-   * On mount: search if URL has params, else browse all
-   * ========================================================= */
   useEffect(() => {
     if (from && to && date) {
       runSearch();
@@ -122,9 +110,6 @@ export default function FerryBookingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* =========================================================
-   * Applied filters + sort
-   * ========================================================= */
   const filteredTrips = useMemo(() => {
     let list = [...trips];
 
@@ -162,18 +147,12 @@ export default function FerryBookingPage() {
 
   const totalPages = Math.ceil(filteredTrips.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedTrips = filteredTrips.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const paginatedTrips = filteredTrips.slice(startIndex, startIndex + itemsPerPage);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [trips, filters]);
 
-  /* =========================================================
-   * Derived info
-   * ========================================================= */
   const fromName = locations.find((l) => String(l.id) === String(from))?.name || "—";
   const toName   = locations.find((l) => String(l.id) === String(to))?.name || "—";
 
@@ -200,9 +179,6 @@ export default function FerryBookingPage() {
     loadUpcoming();
   };
 
-  /* =========================================================
-   * Render
-   * ========================================================= */
   return (
     <div className="bg-mist min-h-screen">
       {/* ============ Hero ============ */}
@@ -505,9 +481,6 @@ export default function FerryBookingPage() {
   );
 }
 
-/* =========================================================
- * Reusable small select field
- * ========================================================= */
 function SelectField({ icon, label, children, ...props }) {
   return (
     <div>

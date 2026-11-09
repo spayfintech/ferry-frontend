@@ -15,6 +15,7 @@ export default function MyBookingsPage() {
   const { isLoggedIn, ready } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [cancellingRef, setCancellingRef] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -28,7 +29,24 @@ export default function MyBookingsPage() {
     }
   };
 
-  useEffect(() => { if (isLoggedIn) load(); }, [isLoggedIn]);
+  useEffect(() => { 
+    if (isLoggedIn) load(); 
+  }, [isLoggedIn]);
+
+  const handleCancel = async (ref) => {
+    if (!window.confirm("Are you sure you want to cancel this booking? Refund policies apply.")) return;
+    
+    setCancellingRef(ref);
+    try {
+      await publicApi.cancelMyBooking(ref);
+      toast.success("Booking cancelled successfully");
+      load(); // Reload list to reflect status
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to cancel booking");
+    } finally {
+      setCancellingRef(null);
+    }
+  };
 
   if (!ready) return <Spinner variant="centered" />;
 
@@ -143,7 +161,14 @@ export default function MyBookingsPage() {
                     <Button size="sm" variant="dark">View Details</Button>
                   </Link>
                   {b.status !== "cancelled" && b.status !== "completed" && (
-                    <Button size="sm" variant="outline">Cancel</Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleCancel(b.booking_reference)}
+                      loading={cancellingRef === b.booking_reference}
+                    >
+                      Cancel
+                    </Button>
                   )}
                 </div>
               </div>

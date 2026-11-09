@@ -74,10 +74,11 @@ export default function BookingModal({ isOpen, onClose, trip }) {
         ...data,
       });
 
-      if (res?.data?.success) {
-        toast.success("Booking confirmed! 🎉");
+        if (res?.data?.success) {
+        toast.success("Booking created! Please complete payment.");
         onClose();
-        navigate(`/booking/${res.data.data.booking_reference}`);
+        // Redirect to Checkout instead of final booking
+        navigate(`/checkout/${res.data.data.booking_reference}`);
       }
     } catch (err) {
       const msg = err?.response?.data?.message || "Booking failed";

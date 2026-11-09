@@ -77,9 +77,9 @@ export default function FilterSidebar({
           aria-label="Maximum price"
         />
         <div className="flex justify-between text-xs font-bold text-navy/60 mt-2">
-          <span>₹{minPrice.toLocaleString("en-IN")}</span>
+          <span>INR {minPrice.toLocaleString("en-IN")}</span>
           <span className="text-ink">
-            Up to ₹{sliderValue.toLocaleString("en-IN")}
+            Up to INR {sliderValue.toLocaleString("en-IN")}
           </span>
         </div>
       </div>
