@@ -16,6 +16,8 @@ import MyBookingsPage from "../pages/MyBookingsPage";
 import PrivacyPolicyPage from "../pages/Legal/PrivacyPolicyPage";
 import TermsConditionsPage from "../pages/Legal/TermsConditionsPage";
 import RefundCancellationPage from "../pages/Legal/RefundCancellationPage";
+import CheckoutPage from "../pages/CheckoutPage";
+
 
 import AdminLayout from "../pages/admin/AdminLayout";
 import DashboardPage from "../pages/admin/DashboardPage";
@@ -43,6 +45,7 @@ export default function AppRoutes() {
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-conditions" element={<TermsConditionsPage />} />
         <Route path="/refund-cancellation" element={<RefundCancellationPage />} />
+        <Route path="/checkout/:reference" element={<CheckoutPage />} />
       </Route>
 
       {/* AUTH */}

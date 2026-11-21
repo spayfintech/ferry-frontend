@@ -251,7 +251,7 @@ export default function TripsPage() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <Input
-              label="Base Price (₹) *"
+              label="Base Price (INR ) *"
               type="number"
               min="0"
               value={form.base_price}
@@ -388,7 +388,7 @@ export default function TripsPage() {
               required
             />
             <Input
-              label="Base Price (₹) *"
+              label="Base Price (INR ) *"
               type="number"
               min="0"
               value={bulk.base_price}
