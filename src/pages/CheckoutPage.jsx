@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ShieldCheck, ArrowLeft, CreditCard, Ship, Lock } from "lucide-react";
+import { load } from "@cashfreepayments/cashfree-js";
 import toast from "react-hot-toast";
 
 import { publicApi } from "../api/public.api";
@@ -26,7 +27,6 @@ export default function CheckoutPage() {
         const data = res?.data?.data;
         if (!data) throw new Error("Booking not found");
 
-        // If already paid, skip checkout and go straight to ticket
         if (data.payment_status === "paid") {
           toast.success("This booking is already paid.");
           navigate(`/booking/${reference}`, { replace: true });
@@ -34,7 +34,7 @@ export default function CheckoutPage() {
         }
 
         setBooking(data);
-      } catch (err) {
+      } catch {
         setError("Booking not found or an error occurred.");
       } finally {
         setLoading(false);
@@ -48,67 +48,75 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      // 1. Initiate Order
+      // 1. Initiate order on backend → get payment_session_id
       const res = await api.post("/checkout/initiate", {
         booking_reference: booking.booking_reference,
       });
 
       const data = res?.data;
-      if (!data.success) throw new Error(data.message || "Could not start payment");
+      if (!data?.success) {
+        throw new Error(data?.message || "Could not start payment");
+      }
 
-      // 2. Open Razorpay Modal
-      const options = {
-        key: data.razorpay_key,
-        amount: data.amount * 100,
-        currency: "INR",
-        name: "Spay Fintech Pvt Ltd",
-        description: data.booking_desc,
-        order_id: data.razorpay_order_id,
-        
-        handler: async function (response) {
-          try {
-            setPaying(true);
-            toast.loading("Verifying payment...", { id: "verify" });
-            
-            const verifyRes = await api.post("/checkout/verify", {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            });
-
-            if (verifyRes.data.success) {
-              toast.success("Payment successful! 🎉", { id: "verify" });
-              // Redirect to the final confirmed ticket page
-              navigate(`/booking/${reference}`, { replace: true });
-            } else {
-              throw new Error("Verification failed");
-            }
-          } catch (err) {
-            toast.error("Payment verification failed. Contact support.", { id: "verify" });
-            setError("Verification failed. Please contact support.");
-          } finally {
-            setPaying(false);
-          }
-        },
-        
-        modal: {
-          ondismiss: function () {
-            setPaying(false);
-            toast.error("Payment window closed.");
-          }
-        },
-        
-        prefill: data.prefill,
-        theme: { color: "#0A1931" }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response) {
-        setPaying(false);
-        setError(response.error.description || "Payment failed.");
+      // 2. Load Cashfree JS SDK
+      const cashfree = await load({
+        mode: data.cashfree_mode === "production" ? "production" : "sandbox",
       });
-      rzp.open();
 
+      // 3. Open Cashfree Checkout (modal)
+      const result = await cashfree.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_modal",
+      });
+
+      // User closed the modal or payment error
+      if (result?.error) {
+        setPaying(false);
+        toast.error(result.error.message || "Payment cancelled.");
+        return;
+      }
+
+      // Redirect flow (unlikely with _modal, but handle it)
+      if (result?.redirect) {
+        // Cashfree will take the user to return_url — nothing else to do
+        return;
+      }
+
+      // 4. Payment completed (modal) → verify on backend
+      if (result?.paymentDetails) {
+        toast.loading("Verifying payment...", { id: "verify" });
+
+        try {
+          const verifyRes = await api.post("/checkout/verify", {
+            order_id: data.cashfree_order_id,
+          });
+
+          if (verifyRes?.data?.success) {
+            toast.success("Payment successful! 🎉", { id: "verify" });
+            navigate(`/booking/${reference}`, { replace: true });
+          } else {
+            // Payment succeeded but our backend couldn't confirm yet
+            toast.success(
+              "Payment received! We are confirming it, you will get an email shortly.",
+              { id: "verify" }
+            );
+            navigate(`/booking/${reference}`, { replace: true });
+          }
+        } catch (err) {
+          toast.success(
+            "Payment received! We are confirming it, you will get an email shortly.",
+            { id: "verify" }
+          );
+          navigate(`/booking/${reference}`, { replace: true });
+        } finally {
+          setPaying(false);
+        }
+        return;
+      }
+
+      // Fallback — unknown state
+      setPaying(false);
+      toast.error("Payment status unclear. Please check your booking page.");
     } catch (err) {
       const msg = err?.response?.data?.message || err.message || "Failed to start payment";
       setError(msg);
@@ -144,7 +152,7 @@ export default function CheckoutPage() {
           {/* Order Summary (Left) */}
           <div className="bg-white rounded-3xl shadow-card p-6 md:p-8 h-fit">
             <h2 className="text-lg font-black text-ink mb-6">Order Summary</h2>
-            
+
             <div className="space-y-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -186,7 +194,7 @@ export default function CheckoutPage() {
           {/* Payment Action (Right) */}
           <div className="bg-white rounded-3xl shadow-modal p-6 md:p-8 h-fit border-2 border-powder/30">
             <h2 className="text-lg font-black text-ink mb-6">Payment Details</h2>
-            
+
             {error && (
               <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100">
                 {error}
@@ -210,14 +218,8 @@ export default function CheckoutPage() {
               {paying ? "Processing…" : "Pay Now"}
             </Button>
 
-            {/* <div className="text-center">
-              <Link to={`/booking/${booking.booking_reference}`} className="text-sm text-navy/60 hover:text-ink underline">
-                Pay on boarding instead
-              </Link>
-            </div> */}
-
             <div className="mt-8 flex items-center justify-center gap-2 text-xs text-navy/40">
-              <Lock size={14} /> Secured by Razorpay
+              <Lock size={14} /> Secured by Cashfree
             </div>
           </div>
         </div>
